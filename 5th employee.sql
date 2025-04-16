@@ -100,26 +100,22 @@ OR P.PNo IN (
 
 # Show the resulting salaries if every employee working on the 'IoT' project
 -- is given a 10% raise.
-SELECT E.SSN, E.Name, E.Salary AS CurrentSalary, 
-       E.Salary * 1.10 AS NewSalary,
-       E.Salary * 0.10 AS SalaryIncrease
-FROM EMPLOYEE E
-JOIN WORKS_ON W ON E.SSN = W.SSN
-JOIN PROJECT P ON W.PNo = P.PNo
-WHERE P.PName = 'IoT';
+#2
+select name, salary as current_salary, salary*110 as incremented_salary
+from employee
+join works_on on works_on.ssn = employee.ssn
+join project on works_on.pno = project.pno
+where project.pname = "IOT";
 
 
- #3. Find the sum of the salaries of all employees of the 'Accounts' department,
--- as well as the maximum salary, the minimum salary, and the average salary in
--- this department.
+
+#3
+
+select sum(salary), max(salary), min(salary), avg(salary)
+from employee
+where dno in (select dno from department where dname = "Accounts");
 
 
-SELECT SUM(Salary) AS TotalSalary,
-       MAX(Salary) AS MaximumSalary,
-       MIN(Salary) AS MinimumSalary,
-       AVG(Salary) AS AverageSalary
-FROM EMPLOYEE
-WHERE DNo = (SELECT DNo FROM DEPARTMENT WHERE DName = 'Accounts');
 
 
 #4
@@ -170,7 +166,7 @@ INSERT INTO EMPLOYEE (SSN, Name, Address, Sex, Salary, SuperSSN, DNo) VALUES
 (306, 'Scarlett Rose', '66 Birch St', 'F', 900000, NULL, 1);
 
 # just make below think work by adding some helpful rows
-SELECT d.dno AS dept, COUNT(*) AS total_employee
+SELECT d.dno AS dept, COUNT(*) AS total_high_pay_employee
 FROM department d
 JOIN employee e ON d.dno = e.dno
 WHERE e.salary > 600000
