@@ -100,26 +100,24 @@ SET FinalIA = (
 );
 
 -- Query 1: List all the student details studying in fourth semester 'C' section
-SELECT * 
-FROM STUDENT 
-WHERE USN IN (
-    SELECT USN 
-    FROM CLASS 
-    WHERE SSID IN (
-        SELECT SSID 
-        FROM SEMSEC 
-        WHERE Sem = 4 AND Sec = 'C'
-    )
-);
+select * from
+student
+where usn in (select usn
+from class
+where ssid in
+(select ssid from semsec where sem = 4 and sec = "C"))
+;
 
 
 -- Query 2: Compute the total number of male and female students in each semester and in each section
-SELECT SS.Sem, SS.Sec, S.Gender, COUNT(*) AS Count
-FROM STUDENT S
-JOIN CLASS C ON S.USN = C.USN
-JOIN SEMSEC SS ON C.SSID = SS.SSID
-GROUP BY SS.Sem, SS.Sec, S.Gender
-ORDER BY SS.Sem, SS.Sec;
+select gender, sec, sem, count(*)
+from student
+join class on student.usn = class.usn
+join semsec on semsec.ssid = class.ssid
+group by gender, semsec.sem, semsec.sec
+;
+
+
 
 -- Query 3: Create a view of Test1 marks of student USN '1BI15CS101' in all subjects
 CREATE VIEW Student_1BI15CS101_Test1 AS
@@ -133,20 +131,20 @@ select * from Student_1BI15CS101_Test1 ;
 -- This is already handled with the ALTER TABLE and UPDATE statements above
 
 -- Query 5: Categorize students based on FinalIA criteria for 8th semester A, B, and C section students
-SELECT IA.USN, IA.Subcode, IA.FinalIA,
-    CASE
-        WHEN IA.FinalIA BETWEEN 17 AND 20 THEN 'Outstanding'
-        WHEN IA.FinalIA BETWEEN 12 AND 16 THEN 'Average'
-        WHEN IA.FinalIA < 12 THEN 'Weak'
-    END AS Category
-FROM IAMARKS IA
-WHERE IA.SSID IN (
-    SELECT SSID 
-    FROM SEMSEC 
-    WHERE Sem = 8 AND Sec IN ('A', 'B', 'C')
-)
-ORDER BY IA.USN, IA.Subcode;
+ALTER TABLE IAMARKS ADD COLUMN category varchar(40);
 
+-- Update FinalIA values
+UPDATE IAMARKS
+SET category = (
+    CASE 
+        WHEN finalia between 17 and 20 then "Outstanding"
+          WHEN finalia between 12 and 14 then "avg"
+          WHEN finalia between 14 and 20 then "weak"
+    END
+);
+select * from iamarks
+where ssid in 
+(select ssid from semsec where sec in ('A','B','C') and sem = 8);
 -- Additional diagnostic queries to check data integrity
 
 -- Check if the FinalIA column exists and has values

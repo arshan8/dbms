@@ -170,11 +170,9 @@ INSERT INTO EMPLOYEE (SSN, Name, Address, Sex, Salary, SuperSSN, DNo) VALUES
 (306, 'Scarlett Rose', '66 Birch St', 'F', 900000, NULL, 1);
 
 # just make below think work by adding some helpful rows
-SELECT D.DNo,
-       (SELECT COUNT(*)
-        FROM EMPLOYEE E2
-        WHERE E2.DNo = D.DNo AND E2.Salary > 600000) AS HighSalaryCount
-FROM DEPARTMENT D
-WHERE (SELECT COUNT(*)
-       FROM EMPLOYEE E1
-       WHERE E1.DNo = D.DNo) > 5;
+SELECT d.dno AS dept, COUNT(*) AS total_employee
+FROM department d
+JOIN employee e ON d.dno = e.dno
+WHERE e.salary > 600000
+GROUP BY d.dno
+HAVING COUNT(*) > 5;

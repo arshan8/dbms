@@ -1,7 +1,6 @@
 #2
 
 
-create database p2;
 use p2 ;
 -- CREATE TABLES
 CREATE TABLE SALESMAN (
@@ -56,80 +55,63 @@ INSERT INTO ORDERS VALUES
 (3004, 4500, '2024-03-03', 2004, 1003),
 (3005, 6000, '2024-03-03', 2005, 1004);
 
-SELECT COUNT(*) AS count_above_bangalore_avg
-FROM CUSTOMER
-WHERE GRADE > (SELECT AVG(GRADE) 
-               FROM CUSTOMER WHERE CITY = 'BANGALORE');
+#1
+select cust_name from
+customer
+where grade > (select avg(grade) from customer where city = "Bangalore");
+
+
+#2
+select s.salesman_id, s.name from
+salesman s
+where s.salesman_id in (
+select c.salesman_id
+from customer c
+group by c.salesman_id
+having count(*)>0);
 
 
 
+#3
+
+select s.salesman_id, s.name, "yes" as "has_customer"
+from salesman s 
+where s.salesman_id in (
+select c.salesman_id
+from customer c
+where city in (select city from salesman d where d.salesman_id = c.salesman_id)
+group by c.salesman_id
+having count(*)>1)
+
+union
+
+select s.salesman_id, s.name, "no" as "has_customer"
+from salesman s 
+where s.salesman_id not in (
+select c.salesman_id
+from customer c
+where city in (select city from salesman d where d.salesman_id = c.salesman_id)
+group by c.salesman_id
+having count(*)>0);
+
+#4
+
+create view hgh as
+select o.ord_date,  s.salesman_id, s.name
+from orders o
+join salesman s on o.salesman_id = s.salesman_id
+where purchase_amt = (select max(purchase_amt) from orders f where f.ord_date = o.ord_date);
+
+select * from hgh ;
 
 
-
-SELECT Name 
-FROM SALESMAN
-WHERE Salesman_id IN (
-    SELECT Salesman_id
-    FROM CUSTOMER
-    GROUP BY Salesman_id
-    HAVING COUNT(*) > 1
-);
-
-
-
-
-
-
-
-
--- Salesmen who have customers in their city
-SELECT S.Salesman_id, S.Name, 'Has Customer' AS Status
-FROM SALESMAN S
-WHERE S.Salesman_id IN (
-    SELECT C.Salesman_id
-    FROM CUSTOMER C
-    WHERE C.City = (SELECT City FROM SALESMAN WHERE Salesman_id = C.Salesman_id)
-)
-
-UNION
-
--- Salesmen who don't have customers in their city
-SELECT S.Salesman_id, S.Name, 'No Customer' AS Status
-FROM SALESMAN S
-WHERE S.Salesman_id NOT IN (
-    SELECT C.Salesman_id
-    FROM CUSTOMER C
-    WHERE C.City = (SELECT City FROM SALESMAN WHERE Salesman_id = C.Salesman_id)
-);
-
-
-
-
-
-
-CREATE VIEW Highest_Order_View AS
-SELECT O.Ord_Date, S.Salesman_id, S.Name AS Salesman_Name, 
-       C.Customer_id, C.Cust_Name, O.Purchase_Amt
-FROM ORDERS O
-JOIN CUSTOMER C ON O.Customer_id = C.Customer_id
-JOIN SALESMAN S ON O.Salesman_id = S.Salesman_id
-WHERE (O.Purchase_Amt, O.Ord_Date) IN (
-    SELECT MAX(Purchase_Amt), Ord_Date
-    FROM ORDERS
-    GROUP BY Ord_Date
-);
-select * from Highest_Order_View;
-
-ALTER TABLE ORDERS
-DROP FOREIGN KEY fk_salesman;
-
-ALTER TABLE ORDERS
-ADD CONSTRAINT fk_salesman
-FOREIGN KEY (Salesman_id) REFERENCES SALESMAN(Salesman_id)
-ON DELETE CASCADE;
+#5
 
 DELETE FROM orders
 WHERE Salesman_id = 1000;
 
 select * from orders
+
+
+
 
